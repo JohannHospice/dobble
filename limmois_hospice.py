@@ -51,12 +51,13 @@ class Deck:
 		'''
 		pass
 
-	# TODO: backtracking algorithm
 	def solution(self):
 		'''
 		la description d’une solution, sous la forme d’une suite de mots sur l’alphabet {0,1}, séparés par des espaces
 
 		d taille maximale du jeu de cartes (deck)
+
+		TODO: backtracking algorithm
 		'''
 		return None
 

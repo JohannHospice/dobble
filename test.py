@@ -18,17 +18,7 @@ for (i, t) in enumerate(TESTS):
 	proc = subprocess.Popen(testCmd, stdout=subprocess.PIPE, shell=True)
 	resultOutput = proc.communicate()[0].decode('utf-8')
 	match = RE_OUTPUT.search(resultOutput)
-	resultMatch = "\t"
-
-	if match:
-		cc = []
-		for (j, e) in enumerate(testOutput):
-			grp = match.group(j + 1)
-			cc.append(repr(grp) + ": " + str(e == grp))
-		resultMatch = '\r\n\t'.join(cc)
-	else: 
-		resultMatch += "syntax error"
-
+	resultMatch = '\r\n\t'.join([str(j) + ": " + str(e == match.group(j + 1)) for (j, e) in enumerate(testOutput)]) if match else "\tsyntax error"
 
 	print("- test " + str(i))
 	print("test input: \n\t" + str(testInput))
