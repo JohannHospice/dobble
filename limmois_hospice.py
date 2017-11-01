@@ -1,76 +1,102 @@
-'''
-nom: andy limmois, johann hospice
-command: py limmois_hospice.py <n> <k> <l> <d>
-'''
-
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import argparse
-
-class Deck:
-	'''
+'''
+nom: andy limmois, johann hospice
+command: py limmois_hospice.py <n> <k> <l> <d>
+description:
 	la taille du plus gros jeu de cartes possible utilisant n symboles, 
 	avec k symboles par carte, chaque symbole apparaissant au plus l fois, 
 	et tel que deux cartes quelconques partagent exactement d symboles.
+variables:
+	n symboles (alphabet)
+	k symboles par carte (longueur des mot)
+	chaque symbole apparaissant au plus l fois
+	deux cartes quelconques partagent exactement d symboles
+'''
+
+import argparse
+
+def bigestSize(n, k, l, d):
 	'''
+	la taille maximale d’un tel jeu de cartes
 
-	def __init__(self, n, k, l, d):
-		'''
-		n symboles
-		k symboles par carte
-		chaque symbole apparaissant au plus l fois
-		deux cartes quelconques partagent exactement d symboles
-		'''
-		self.n = n
-		self.k = k
-		self.l = l
-		self.d = d
+	PIST: n ^ k taille maximale du jeu de cartes sans contraintes(l && d)
+	'''
+	return binomial(n, k)
 
-		# taille maximum
-		self.maxSize = -1
+def distinctSolutions(n, k, l, d):
+	'''
+	le nombre de solutions distinctes
 
-		# nombre de solutions
-		self.nbSol = -1
-
-	def bigestSize(self):
-		'''
-		la taille maximale d’un tel jeu de cartes
-
-		PIST: n * k taille maximale du jeu de cartes sans contraintes(l && d)
-		'''
-		pass
-
-	def distinctSolutions(self):
-		'''
-		le nombre de solutions distinctes
-
-		NEED:
-			d taille maximale du jeu de cartes (deck)
-			h taille d'une main de carte (hand)
-		'''
-		pass
-
-	def solution(self):
-		'''
-		la description d’une solution, sous la forme d’une suite de mots sur l’alphabet {0,1}, séparés par des espaces
-
+	NEED:
 		d taille maximale du jeu de cartes (deck)
+		h taille d'une main de carte (hand)
+	'''
+	return -1
 
-		TODO: backtracking algorithm
-		'''
-		return None
+def solution(n, k, l, d, e=[]):
+	'''
+	la description d’une solution, sous la forme d’une suite de mots sur l’alphabet {0,1}, séparés par des espaces
+	'''
+	print(e)
 
-	def format(self):
-		'''
-		retourne une string ayant le format de sortie demandé dans le sujet
+	# verifie nombre d'apparition de symboles 
+	for i in range(n):
+		lsum = 0
+		for c in e:
+			if c[i] == 1:
+				lsum += 1
+		if lsum > l:
+			return None
+	#pour une paire de cartes
+	for c1 in e:
+		for c2 in e: 
+			if c1 != c2:
+				dsum = 0
+				for i in range(n):
+					if c1[i] == 1 and c1[i] == c2[i]:
+						dsum += 1
+				if dsum != d: return None
+	# si toutes condition respectés et longueur atteinte, retourner solution
+	if len(e) == n:
+		return e
+	# creation d'une carte
+	for i in range(pow(2, n)):
+		c = intToBin(i, n)
+		if c not in e:
+			# verifie le nombre de symbole dans c est egal a k
+			ksum = sum(c)
+			if ksum == k:
+				s = solution(n, k, l, d, e + [c])
+				if s != None:
+					return s
 
-		d un tableau d'argument
-		'''
-		# si None alors chaine vide sinon normal
-		# \n entre chaque case du tableau
-		return '\n'.join(str(x) if x else "" for x in [self.maxSize, self.nbSol, self.solution()])
+	return None
+
+def format(b, d, s):
+	'''
+	retourne une string ayant le format de sortie demandé dans le sujet
+
+	d un tableau d'argument
+	'''
+	# si None alors chaine vide sinon normal
+	# \n entre chaque case du tableau
+	if s != None:
+		s = ' '.join([''.join([str(b) for b in c]) for c in s])
+	return '\n'.join(str(x) if x else "" for x in [b, d, s])
 		
+def	intToBin(x, n):
+	if x >= pow(2, n):
+		raise Exception()
+	c = [0] * n
+	for j in reversed(range(0, n)):
+		nx = x - pow(2, j)
+		if nx >= 0:
+			x = nx
+			c[j] = 1
+	return c
+
 def binomial(n, k):
     '''
     A fast way to calculate binomial coefficients by Andrew Dalke.
@@ -79,7 +105,7 @@ def binomial(n, k):
     if 0 <= k <= n:
         ntok = 1
         ktok = 1
-        for t in xrange(1, min(k, n - k) + 1):
+        for t in range(1, min(k, n - k) + 1):
             ntok *= n
             ktok *= t
             n -= 1
@@ -112,8 +138,12 @@ if __name__ == '__main__':
 
 	args = buildParser().parse_args()
 
-	dobble = Deck(args.n, args.k, args.l, args.d)
+	bigestSize = bigestSize(args.n, args.k, args.l, args.d)
 	
-	output = dobble.format()
+	distinctSolutions = distinctSolutions(args.n, args.k, args.l, args.d)
 	
-	print(output, end='') # pas de nouvelle ligne à la fin
+	solution = solution(args.n, args.k, args.l, args.d)
+	
+	output = format(bigestSize, distinctSolutions, solution)
+	
+	print(output) # pas de nouvelle ligne à la fin
