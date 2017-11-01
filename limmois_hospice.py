@@ -35,11 +35,20 @@ def distinctSolutions(n, k, l, d):
 	'''
 	return -1
 
-def solution(n, k, l, d, e=[]):
+def prepare(n, k):
+	D = []
+	for i in range(pow(2, n)):
+		c = intToBin(i, n)
+		ksum = sum(c)
+		if ksum == k:
+			D += [c]
+	return D
+
+def solution(n, k, l, d, D, e=[]):
 	'''
 	la description d’une solution, sous la forme d’une suite de mots sur l’alphabet {0,1}, séparés par des espaces
 	'''
-	print(binArrToStr(e))
+	#print(binArrToStr(e))
 
 	# verifie nombre d'apparition de symboles 
 	for i in range(n):
@@ -62,16 +71,12 @@ def solution(n, k, l, d, e=[]):
 	if len(e) == n:
 		return e
 	# creation d'une carte
-	for i in range(pow(2, n)):
-		c = intToBin(i, n)
-		if c not in e:
-			# verifie le nombre de symbole dans c est egal a k
-			ksum = sum(c)
-			if ksum == k:
-				s = solution(n, k, l, d, e + [c])
-				if s != None:
-					return s
-
+	for c in D:
+		nD = D
+		nD.remove(c)
+		s = solution(n, k, l, d, nD, e + [c])
+		if s != None:
+			return s
 	return None
 
 def format(b, d, s):
@@ -146,12 +151,19 @@ if __name__ == '__main__':
 
 	args = buildParser().parse_args()
 
+	D = prepare(args.n, args.k)
+	print("# paquet préparé: "+binArrToStr(D))
+
 	bigestSize = bigestSize(args.n, args.k, args.l, args.d)
 	
 	distinctSolutions = distinctSolutions(args.n, args.k, args.l, args.d)
 	
-	solution = solution(args.n, args.k, args.l, args.d)
+
+	solution = solution(args.n, args.k, args.l, args.d, D, [])
+
 	
+	print("# paquet reste: "+binArrToStr(D))
 	output = format(bigestSize, distinctSolutions, solution)
 	
 	print(output) # pas de nouvelle ligne à la fin
+	print("# si champ 3 \"solution\" vide peut etre un probleme avec la taille de la solution ligne ~70")
