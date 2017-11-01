@@ -39,7 +39,7 @@ def solution(n, k, l, d, e=[]):
 	'''
 	la description d’une solution, sous la forme d’une suite de mots sur l’alphabet {0,1}, séparés par des espaces
 	'''
-	print(e)
+	print(binArrToStr(e))
 
 	# verifie nombre d'apparition de symboles 
 	for i in range(n):
@@ -83,9 +83,17 @@ def format(b, d, s):
 	# si None alors chaine vide sinon normal
 	# \n entre chaque case du tableau
 	if s != None:
-		s = ' '.join([''.join([str(b) for b in c]) for c in s])
+		s = binArrToStr(s)
 	return '\n'.join(str(x) if x else "" for x in [b, d, s])
 		
+
+def binStrToArr(m):
+	return [[int(a) for a in x] for x in m.split(' ')]
+
+
+def binArrToStr(m):
+	return ' '.join([''.join([str(b) for b in c]) for c in m])
+
 def	intToBin(x, n):
 	if x >= pow(2, n):
 		raise Exception()
