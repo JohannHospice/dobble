@@ -49,6 +49,8 @@ def syntax(b=0, d=0, s=""):
 def longest(A):
 	'''
 	retourne le plus grand sous ensemble d'un ensemble A
+	
+	O(A)
 	'''
 	lmax = -1
 	amax = None
@@ -67,7 +69,8 @@ def binArrToStr(m):
 def	intToBin(x, n):
 	'''
 	convertit un entier x en list d'entier binaire de taille n
-	O(N)
+
+	O(N^2) // reverse * range
 	'''
 	if x >= pow(2, n):
 		raise Exception()
@@ -98,6 +101,7 @@ class Deck:
 	def prepare(self):
 		'''
 		un ensemble de cartes ayant k symboles par cartes parmis n symboles
+
 		O(2^N) * intoBin
 		'''
 		D = []
@@ -111,6 +115,7 @@ class Deck:
 	def checkL(self, D):
 		'''
 		verifie que les symboles n'apparaissent pas trop de fois (en fonction de l) 
+		
 		O(D * N)
 		'''
 		for i in range(self.n):
@@ -147,9 +152,11 @@ class Deck:
 
 		toutes les description des solutions distinctes de D
 		D: un ensemble de de liste d'entier binaire
+
+		O(?)
 		'''
 
-		if len(D) == 0:
+		if len(D) < self.n:
 			return []
 		
 		# print(binArrToStr(D))
@@ -174,11 +181,13 @@ if __name__ == '__main__':
 	args = buildParser().parse_args()
 
 	deck = Deck(args.n, args.k, args.l, args.d)
+	
 	p = deck.prepare()
 
 	print("# paquet préparé: " + binArrToStr(p))
 
 	solutions = deck.solutions(p)
+
 	print("# toutes solutions: \n#\t" + '\n#\t '.join([binArrToStr(s) for s in solutions])) # pas de nouvelle ligne à la fin
 
 	longest = longest(solutions)
