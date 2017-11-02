@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
+# *- coding: utf-8 -*-
 
 '''
 nom: andy limmois, johann hospice
@@ -8,124 +8,13 @@ description:
 	la taille du plus gros jeu de cartes possible utilisant n symboles, 
 	avec k symboles par carte, chaque symbole apparaissant au plus l fois, 
 	et tel que deux cartes quelconques partagent exactement d symboles.
-variables:
-	n symboles (alphabet)
-	k symboles par carte (longueur des mot)
-	chaque symbole apparaissant au plus l fois
-	deux cartes quelconques partagent exactement d symboles
 '''
 
 import argparse
 
-def bigestSize(n, k, l, d):
-	'''
-	la taille maximale d’un tel jeu de cartes
-
-	PIST: n ^ k taille maximale du jeu de cartes sans contraintes(l && d)
-	'''
-	return binomial(n, k)
-
-def distinctSolutions(n, k, l, d):
-	'''
-	le nombre de solutions distinctes
-
-	NEED:
-		d taille maximale du jeu de cartes (deck)
-		h taille d'une main de carte (hand)
-	'''
-	return -1
-
-def prepare(n, k):
-	D = []
-	for i in range(pow(2, n)):
-		c = intToBin(i, n)
-		ksum = sum(c)
-		if ksum == k:
-			D += [c]
-	return D
-
-def solution(n, k, l, d, D, e=[]):
-	'''
-	la description d’une solution, sous la forme d’une suite de mots sur l’alphabet {0,1}, séparés par des espaces
-	'''
-	#print(binArrToStr(e))
-
-	# verifie nombre d'apparition de symboles 
-	for i in range(n):
-		lsum = 0
-		for c in e:
-			if c[i] == 1:
-				lsum += 1
-		if lsum > l:
-			return None
-	#pour une paire de cartes
-	for c1 in e:
-		for c2 in e: 
-			if c1 != c2:
-				dsum = 0
-				for i in range(n):
-					if c1[i] == 1 and c1[i] == c2[i]:
-						dsum += 1
-				if dsum != d: return None
-	# si toutes condition respectés et longueur atteinte, retourner solution
-	if len(e) == n:
-		return e
-	# creation d'une carte
-	for c in D:
-		nD = D
-		nD.remove(c)
-		s = solution(n, k, l, d, nD, e + [c])
-		if s != None:
-			return s
-	return None
-
-def format(b, d, s):
-	'''
-	retourne une string ayant le format de sortie demandé dans le sujet
-
-	d un tableau d'argument
-	'''
-	# si None alors chaine vide sinon normal
-	# \n entre chaque case du tableau
-	if s != None:
-		s = binArrToStr(s)
-	return '\n'.join(str(x) if x else "" for x in [b, d, s])
-		
-
-def binStrToArr(m):
-	return [[int(a) for a in x] for x in m.split(' ')]
-
-
-def binArrToStr(m):
-	return ' '.join([''.join([str(b) for b in c]) for c in m])
-
-def	intToBin(x, n):
-	if x >= pow(2, n):
-		raise Exception()
-	c = [0] * n
-	for j in reversed(range(0, n)):
-		nx = x - pow(2, j)
-		if nx >= 0:
-			x = nx
-			c[j] = 1
-	return c
-
-def binomial(n, k):
-    '''
-    A fast way to calculate binomial coefficients by Andrew Dalke.
-    See http://stackoverflow.com/questions/3025162/statistics-combinations-in-python
-    '''
-    if 0 <= k <= n:
-        ntok = 1
-        ktok = 1
-        for t in range(1, min(k, n - k) + 1):
-            ntok *= n
-            ktok *= t
-            n -= 1
-        return ntok // ktok
-    else:
-        return 0
-
+'''
+Outils
+'''
 def buildParser():
 	parser = argparse.ArgumentParser(
 		description='Generate a deck of dobble card game')
@@ -147,23 +36,156 @@ def buildParser():
  		help='nombre de symboles partagés par deux cartes quelconques')
 	return parser
 
+def syntax(b=0, d=0, s=""):
+	'''
+	retourne une string ayant le format de sortie demandé dans le sujet
+
+	b: taille maximal
+	d: nombre de solutions distinctes
+	s: une solution
+	'''
+	return '\n'.join(str(x) for x in [b, d, s])
+
+def longest(A):
+	'''
+	retourne le plus grand sous ensemble d'un ensemble A
+	'''
+	lmax = -1
+	amax = None
+	for a in A:
+		if len(a) > lmax:
+			amax = a
+			lmax = len(a)
+	return amax
+
+def binStrToArr(m):
+	return [[int(a) for a in x] for x in m.split(' ')]
+
+def binArrToStr(m):
+	return ' '.join([''.join([str(b) for b in c]) for c in m])
+
+def	intToBin(x, n):
+	'''
+	convertit un entier x en list d'entier binaire de taille n
+	O(N)
+	'''
+	if x >= pow(2, n):
+		raise Exception()
+	c = [0] * n
+	for j in reversed(range(0, n)):
+		nx = x - pow(2, j)
+		if nx >= 0:
+			x = nx
+			c[j] = 1
+	return c
+
+'''
+Deck
+'''
+class Deck:
+	def __init__(self, n, k, l, d):
+		'''
+		n symboles (alphabet)
+		k symboles par carte (longueur des mot)
+		chaque symbole apparaissant au plus l fois
+		deux cartes quelconques partagent exactement d symboles
+		'''
+		self.n = n
+		self.k = k
+		self.l = l
+		self.d = d
+
+	def prepare(self):
+		'''
+		un ensemble de cartes ayant k symboles par cartes parmis n symboles
+		O(2^N) * intoBin
+		'''
+		D = []
+		for i in range(pow(2, self.n)):
+			c = intToBin(i, self.n)
+			ksum = sum(c)
+			if ksum == self.k:
+				D += [c]
+		return D
+
+	def checkL(self, D):
+		'''
+		verifie que les symboles n'apparaissent pas trop de fois (en fonction de l) 
+		O(D * N)
+		'''
+		for i in range(self.n):
+			lsum = 0
+			for c in D:
+				if c[i] == 1:
+					lsum += 1
+			if lsum > self.l:
+				return False
+		return True
+
+	def checkD(self, D):
+		'''
+		vérifie que toutes pairs de cartes respecte le nombre de symboles en commun (en fonction de d)
+
+		O(D^2 * N)
+		'''
+		if len(D) < 2:
+			return False # puisquil n'y a pas de pairs
+		for c1 in D:
+			for c2 in D: 
+				if c1 != c2:
+					dsum = 0
+					for i in range(self.n):
+						if c1[i] == 1 and c1[i] == c2[i]:
+							dsum += 1
+					if dsum != self.d:
+						return False
+		return True
+
+	def solutions(self, D):
+		'''
+		WARN: inefficace, fait de multiple fois des memes calcules sur de memes ensemble. revoir arbre backtracking
+
+		toutes les description des solutions distinctes de D
+		D: un ensemble de de liste d'entier binaire
+		'''
+
+		if len(D) == 0:
+			return []
+		
+		# print(binArrToStr(D))
+		
+		S = []
+
+		if self.checkL(D) and self.checkD(D):
+			S += [D]
+
+		# enlever une carte
+		for c in D:
+			nS = self.solutions([x for x in D if x != c])
+			S += [x for x in nS if x not in S]
+
+		return S
+
+'''
+Main
+'''
 if __name__ == '__main__':
 
 	args = buildParser().parse_args()
 
-	D = prepare(args.n, args.k)
-	print("# paquet préparé: "+binArrToStr(D))
+	deck = Deck(args.n, args.k, args.l, args.d)
+	p = deck.prepare()
 
-	bigestSize = bigestSize(args.n, args.k, args.l, args.d)
-	
-	distinctSolutions = distinctSolutions(args.n, args.k, args.l, args.d)
-	
+	print("# paquet préparé: " + binArrToStr(p))
 
-	solution = solution(args.n, args.k, args.l, args.d, D, [])
+	solutions = deck.solutions(p)
+	print("# toutes solutions: \n#\t" + '\n#\t '.join([binArrToStr(s) for s in solutions])) # pas de nouvelle ligne à la fin
 
+	longest = longest(solutions)
+
+	if longest != None:
+		output = syntax(len(longest), len(solutions), binArrToStr(longest))
+	else:
+		output = syntax(d=len(solutions))
 	
-	print("# paquet reste: "+binArrToStr(D))
-	output = format(bigestSize, distinctSolutions, solution)
-	
-	print(output) # pas de nouvelle ligne à la fin
-	print("# si champ 3 \"solution\" vide peut etre un probleme avec la taille de la solution ligne ~70")
+	print(output)
