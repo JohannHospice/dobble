@@ -4,10 +4,6 @@
 '''
 nom: andy limmois, johann hospice
 command: py limmois_hospice.py <n> <k> <l> <d>
-description:
-	la taille du plus gros jeu de cartes possible utilisant n symboles, 
-	avec k symboles par carte, chaque symbole apparaissant au plus l fois, 
-	et tel que deux cartes quelconques partagent exactement d symboles.
 '''
 
 import argparse
@@ -38,49 +34,55 @@ def buildParser():
 
 def syntax(b=0, d=0, s=""):
 	'''
-	retourne une string ayant le format de sortie demandé dans le sujet
-
-	b: taille maximal
-	d: nombre de solutions distinctes
-	s: une solution
+	retourne une chaine de caracteres ayant le format de sortie demandé dans le sujet
 	'''
 	return '\n'.join(str(x) for x in [b, d, s])
 
-def longest(A):
+def longest(L):
 	'''
-	retourne le plus grand sous ensemble d'un ensemble A
-	
-	O(A)
+	retourne le plus grand element quelconque d'un ensemble L
+	L: list contenant des elements ayant une certaine taille
 	'''
 	lmax = -1
 	amax = None
-	for a in A:
-		if len(a) > lmax:
-			amax = a
-			lmax = len(a)
+	for e in L:
+		if len(e) > lmax:
+			amax = e
+			lmax = len(e)
 	return amax
 
-def binStrToArr(m):
-	return [[int(a) for a in x] for x in m.split(' ')]
+def binStrToArr(S):
+	return [[int(a) for a in x] for x in S.split(' ')]
 
-def binArrToStr(m):
-	return ' '.join([''.join([str(b) for b in c]) for c in m])
+def binArrToStr(A):
+	return ' '.join([''.join([str(b) for b in c]) for c in A])
 
 def	intToBin(x, n):
 	'''
-	convertit un entier x en list d'entier binaire de taille n
-
-	O(N^2) // reverse * range
+	retourne la convertion d'un entier x en list d'entier binaire de taille n
+	x: entier (valeur decimal)
+	n: entier (taille du mot binaire)
 	'''
 	if x >= pow(2, n):
 		raise Exception()
-	c = [0] * n
+	c = ["0"] * n
 	for j in reversed(range(0, n)):
 		nx = x - pow(2, j)
 		if nx >= 0:
 			x = nx
-			c[j] = 1
-	return c
+			c[j] = "1"
+	return ''.join(c)
+
+def issubsubset(a, E):
+	'''
+	retourne si un element a est inclus dans un sous ensemble de E
+	E: ensemble
+	a: ensemble
+	'''
+	for e in E:
+		if a <= e:
+			return True
+	return False
 
 '''
 Deck
@@ -98,79 +100,92 @@ class Deck:
 		self.l = l
 		self.d = d
 
-	def prepare(self):
+	def possibilities(self):
 		'''
-		un ensemble de cartes ayant k symboles par cartes parmis n symboles
-
-		O(2^N) * intoBin
+		retourne un ensemble de cartes ayant k symboles par cartes parmis n symboles
 		'''
 		D = []
 		for i in range(pow(2, self.n)):
 			c = intToBin(i, self.n)
-			ksum = sum(c)
-			if ksum == self.k:
+			if self.checkK(c): 
 				D += [c]
 		return D
 
-	def checkL(self, D):
+	def checkK(self, C):
 		'''
-		verifie que les symboles n'apparaissent pas trop de fois (en fonction de l) 
-		
-		O(D * N)
+		retourne si une carte contient bien k symboles
+		C: chaine de caractere (carte)
+
+		'''
+		ksum = 0
+		for s in C:
+			if s == "1":
+				ksum += 1
+		if ksum == self.k:
+			return True
+		return False
+
+	def checkL(self, P):
+		'''
+		retourne si les symboles n'apparaissent pas trop de fois dans un paquet (en fonction de l)
+		P: ensemble de chaine de caractere (paquet de cartes)
 		'''
 		for i in range(self.n):
 			lsum = 0
-			for c in D:
-				if c[i] == 1:
+			for c in P:
+				if c[i] == "1":
 					lsum += 1
 			if lsum > self.l:
 				return False
 		return True
 
-	def checkD(self, D):
+	def checkD(self, P):
 		'''
-		vérifie que toutes pairs de cartes respecte le nombre de symboles en commun (en fonction de d)
-
-		O(D^2 * N)
+		retourne si toutes pairs de cartes respecte le nombre de symboles en commun (en fonction de d)
+		P: ensemble de chaine de caractere (paquet de cartes)
 		'''
-		if len(D) < 2:
-			return False # puisquil n'y a pas de pairs
-		for c1 in D:
-			for c2 in D: 
-				if c1 != c2:
+		for c1 in P:
+			for c2 in P:
+				if c1 != c2: # pour deux cartes differentes du paquet
 					dsum = 0
 					for i in range(self.n):
-						if c1[i] == 1 and c1[i] == c2[i]:
+						if c1[i] == "1" and c1[i] == c2[i]: # si meme symbole est present
 							dsum += 1
 					if dsum != self.d:
 						return False
 		return True
-
-	def solutions(self, D):
+	
+	def solutions(self):
 		'''
-		WARN: inefficace, fait de multiple fois des memes calcules sur de memes ensemble. revoir arbre backtracking
-
-		toutes les description des solutions distinctes de D
-		D: un ensemble de de liste d'entier binaire
-
-		O(?)
+		retourne toutes les descriptions de solutions distinctes
 		'''
+		def aux(SP, P=set()):
+			'''
+			fonction auxiliaire permettant d'utiliser S,
+			une variable en dehors de l'environnement de recursion
+			permettant d'y ajouter simplement des elements
+			SP: liste d'ensemble de chaine de caractere (liste des possibilités)
+			P: ensemble de chaine de caractere (le paquet traité)
+			'''
+			if not self.checkL(P) or not self.checkD(P):
+				return None
+			
+			elif len(SP) == 0:
+				return P
 
-		if len(D) < self.n:
-			return []
-		
-		# print(binArrToStr(D))
-		
-		S = []
+			else:
+				s1 = aux(SP[1::], P | {SP[0]}) # appel recursif avec solution retirée
+				s2 = aux(SP[1::], P) # appel recursif sans solution retirée
 
-		if self.checkL(D) and self.checkD(D):
-			S += [D]
+				if s1 and not issubsubset(s1, S):
+					S.append(s1)
+				if s2 and not issubsubset(s2, S):
+					S.append(s2)
+				return None
 
-		# enlever une carte
-		for c in D:
-			nS = self.solutions([x for x in D if x != c])
-			S += [x for x in nS if x not in S]
-
+		SP = self.possibilities()
+		S = [] # liste contenant toutes les solutions
+		aux(SP)
 		return S
 
 '''
@@ -182,19 +197,19 @@ if __name__ == '__main__':
 
 	deck = Deck(args.n, args.k, args.l, args.d)
 	
-	p = deck.prepare()
-
-	print("# paquet préparé: " + binArrToStr(p))
-
-	solutions = deck.solutions(p)
-
-	print("# toutes solutions: \n#\t" + '\n#\t '.join([binArrToStr(s) for s in solutions])) # pas de nouvelle ligne à la fin
+	solutions = deck.solutions()
 
 	longest = longest(solutions)
-
-	if longest != None:
+	
+	if longest:
 		output = syntax(len(longest), len(solutions), binArrToStr(longest))
 	else:
-		output = syntax(d=len(solutions))
+		output = syntax()
+
+	'''
+	display
+	'''
+
+	#print("# toutes solutions: \n#\t" + '\n#\t'.join([binArrToStr(s) for s in solutions]))
 	
 	print(output)
