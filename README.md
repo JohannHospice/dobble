@@ -1,7 +1,5 @@
 # Dobble
 
-## ÉNONCÉ :
-
 Le jeu Dobble utilise des cartes dont chacune représente k=8 dessins choisis parmi n=57 dessins différents; chaque dessin apparaît sur au plus l=8 cartes, et chaque paire de cartes possède exactement d=1 dessin en commun.
 
 Le but du devoir est de construire de tels jeux de cartes, les plus gros possible, pour d'autres 4-uplets (n, k, l, d).
@@ -33,15 +31,3 @@ Un exemple plus gros : une sortie possible pour n=7, k=l=4 et d=2  est :
 30
 0001111 0110011 1010101 1101001 1100110 1011010 0111100
 ```
-## CONSIGNES :
-
-Tout écart à la consigne donnera lieu à la note 0.
-
-- Vous pouvez rendre le devoir par binôme 
-- Vous devez rendre un fichier __unique__ contenant le code source et rien d'autre. 
-- Votre programme doit être écrit en __Java__, en __Python3__ ou en __C__.
-- Votre fichier doit se nommer __nom1_nom2.c__ (ou .java ou .py selon le cas)
-- Votre fichier doit __commencer par un commentaire contenant__ : 
-	- votre nom et celui de votre binôme
-	- la commande à utiliser pour compiler et pour exécuter le programme.
-- Le programme doit prendre __4 entiers en paramètre de ligne de commande__ (et rien d'autre).
