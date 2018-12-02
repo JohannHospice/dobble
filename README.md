@@ -31,3 +31,4 @@ Un exemple plus gros : une sortie possible pour n=7, k=l=4 et d=2  est :
 30
 0001111 0110011 1010101 1101001 1100110 1011010 0111100
 ```
+##### Contributeurs: Johann Hospice et Andy Limmois
